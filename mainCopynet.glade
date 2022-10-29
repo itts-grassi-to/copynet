@@ -1,59 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.40.0 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkDialog">
-    <property name="can-focus">False</property>
-    <property name="type-hint">dialog</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="dlgHelp">
-        <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox">
-            <property name="can-focus">False</property>
-            <property name="layout-style">end</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <object class="GtkButton" id="btOk">
-                <property name="label" translatable="yes">button</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Il software è costruito 
-da Ortu prof. Daniele
-email: daniele.ortu@itisgrassi.edu.it</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-  </object>
   <object class="GtkBox" id="hRow">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -87,7 +35,7 @@ email: daniele.ortu@itisgrassi.edu.it</property>
       <object class="GtkImage" id="img">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="pixbuf">../immagini/semaV.png</property>
+        <property name="pixbuf">img/semaV.png</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -109,7 +57,7 @@ email: daniele.ortu@itisgrassi.edu.it</property>
   <object class="GtkImage" id="imgHelp">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="pixbuf">img/danieleBK.png</property>
+    <property name="pixbuf">img/icoCopynet.png</property>
   </object>
   <object class="GtkImage" id="imgStopTutti">
     <property name="visible">True</property>
