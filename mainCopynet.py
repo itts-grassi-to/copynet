@@ -38,29 +38,33 @@ class CPN():
         row.add(hbox)
         if first:
             label = Gtk.Label(xalign=0, width_chars=10)
-            label.set_markup("<span bgcolor='gray'>" + l[0] + "</span>")
+            label.set_markup("<span bgcolor='gray' color='white'>  " + l[0] + "  </span>")
             hbox.pack_start(label, True, True, 0)
             label = Gtk.Label(xalign=0, width_chars=30)
-            label.set_markup("<span bgcolor='gray'>" + l[1] + "</span>")
+            label.set_markup("<span bgcolor='gray' color='white'>  " + l[1] + "  </span>")
             hbox.pack_start(label, True, True, 0)
             label = Gtk.Label(label="", xalign=0, width_chars=10)
+            label.set_markup("<span bgcolor='gray' color='white'>  PERC  </span>")
             hbox.pack_start(label, True, True, 0)
             label = Gtk.Label(label="", xalign=0, width_chars=1)
+            label.set_markup("<span bgcolor='gray' color='white'>  ACT  </span>")
             hbox.pack_start(label, True, True, 0)
         else:
             label = Gtk.Label(label=l[0], xalign=0, width_chars=10)
             hbox.pack_start(label, True, True, 0)
             label = Gtk.Label(label=l[1], xalign=0, width_chars=30)
             hbox.pack_start(label, True, True, 0)
-            label = Gtk.Label(label="100%", xalign=0, width_chars=10)
+            label = Gtk.Label(label="0%", xalign=0, width_chars=10)
             hbox.pack_start(label, True, True, 0)
             check = Gtk.CheckButton()
+            check.set_active(True)
             hbox.pack_start(check, False, True, 0)
         return row
     def __caricaHosts(self):
         with open(FILE_CONF, "r") as f:
             lettore = csv.reader(f, delimiter=";")
             row = next(lettore)
+            lstHosts.set_selection_mode(Gtk.SelectionMode.NONE)
             lstHosts.add(self.__creaRigaHost(row,True))
             for row in lettore:
                 lstHosts.add(self.__creaRigaHost(row, False))
