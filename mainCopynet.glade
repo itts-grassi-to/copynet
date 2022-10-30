@@ -69,7 +69,7 @@
     <property name="title" translatable="yes">COPY NET</property>
     <child>
       <object class="GtkBox" id="vmain">
-        <property name="width-request">500</property>
+        <property name="width-request">700</property>
         <property name="height-request">400</property>
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -111,7 +111,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFileChooserButton">
+          <object class="GtkFileChooserButton" id="btScegliFile">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="margin-top">10</property>
