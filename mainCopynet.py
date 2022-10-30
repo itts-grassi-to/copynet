@@ -17,6 +17,8 @@ class EventiMain:
         self.__win = win
     def on_btHelp_clicked(self, button):
         self.__cpn.on_btHelp_clicked(self.__win)
+    def on_btAvvia_clicked(self, bt):
+        self.__cpn.on_avvia()
 class Dlg(Gtk.Dialog):
     def __init__(self, parent, testo) :
         super().__init__(title="Informazioni", transient_for=parent, flags=0)
@@ -69,12 +71,18 @@ class CPN():
             for row in lettore:
                 lstHosts.add(self.__creaRigaHost(row, False))
                 # print(row)
-
     def on_btHelp_clicked(self, win):
         dialog = Dlg(win, "Il software è costruito\nda Ortu prof. Daniele\nemail: daniele.ortu@itisgrassi.edu.it")
         dialog.run()
         dialog.destroy()
-
+    def on_avvia(self):
+        #print("avvia")
+        i = 1
+        row = lstHosts.get_row_at_index(i)
+        while row != None:
+            i = i+1
+            row = lstHosts.get_row_at_index(i)
+            print(i)
 
 # *********** MAIN
 builMain = Gtk.Builder()
