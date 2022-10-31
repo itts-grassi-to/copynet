@@ -25,6 +25,8 @@ class EventiMain:
         self.__cpn.on_avvia()
     def on_btStop_clicked(self, bt):
         self.__cpn.on_stop()
+    def on_btExit_clicked(self,bt):
+        self.__cpn.on_exit()
 class Dlg(Gtk.Dialog):
     def __init__(self, parent, testo) :
         super().__init__(title="Informazioni", transient_for=parent, flags=0)
@@ -45,13 +47,16 @@ class CPN():
         self.__semaLettoriScrittori = Semaphore(1)
         self.__semaAntiRimbalzo = Semaphore(0)
         self.__caricaHosts()
+        self.__cancellaLog()
     def __enum(self, **enums):
         return type('Enum', (), enums)
-    def __stampaSincro(self,s):
+    def __stampaLog(self,s):
         self.__semaLettoriScrittori.acquire()
-        print(s)
+        lblLog.set_label(s + "\n" + lblLog.get_label())
         self.__semaLettoriScrittori.release()
-
+    def __cancellaLog(self):
+        # print("cancellaLista",)
+        lblLog.set_label("")
     def __creaRigaHost(self, l, first):
         row = Gtk.ListBoxRow()
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -111,14 +116,15 @@ class CPN():
             for row in lettore:
                 lstHosts.add(self.__creaRigaHost(row, False))
                 # print(row)
+        #lst.show_all()
     def __thPerc(self):
-        self.__stampaSincro("thPerc avviato")
+        self.__stampaLog("thPerc avviato")
         while not self.__stopThread:
             lstHosts.show_all()
             time.sleep(2)
-        self.__stampaSincro("thPerc fermato")
+        self.__stampaLog("thPerc fermato")
     def __thCopia(self, row, sema, nomeFile):
-        self.__stampaSincro("thCopia avviato su " + row.get_child().get_children()[self.__nomeCampi.NOME].get_label())
+        self.__stampaLog("thCopia avviato su " + row.get_child().get_children()[self.__nomeCampi.NOME].get_label())
         # row.get_child().get_children()[0]     # nome PC
         # row.get_child().get_children()[1]     # indirizzo IP
         # row.get_child().get_children()[3]     attivato
@@ -141,16 +147,16 @@ class CPN():
                 row.get_child().get_children()[self.__nomeCampi.PERC].set_label(str(iperc)+"%")       # percentuale
                 time.sleep(1)
         sema.release()
-        self.__stampaSincro("thCopia fermato" + row.get_child().get_children()[0].get_label())
+        self.__stampaLog("thCopia fermato" + row.get_child().get_children()[0].get_label())
 
     def __thFerma(self, sema):
-        self.__stampaSincro("thFerma avviato")
+        self.__stampaLog("thFerma avviato")
         for s in sema:
             s.acquire()
-        self.__stampaSincro("stop thread")
+        self.__stampaLog("stop thread")
         self.__stopThread = True
         self.__semaAntiRimbalzo.acquire(False)
-        self.__stampaSincro("thFerma finito")
+        self.__stampaLog("thFerma finito")
     def on_btHelp_clicked(self, win):
         dialog = Dlg(win, "Il software è costruito\nda Ortu prof. Daniele\nemail: daniele.ortu@itisgrassi.edu.it")
         dialog.run()
@@ -169,6 +175,7 @@ class CPN():
             dialog.run()
             dialog.destroy()
             return
+        self.__cancellaLog()
         if self.__semaAntiRimbalzo.acquire(False):
             self.__semaAntiRimbalzo.release()
             return
@@ -191,13 +198,20 @@ class CPN():
         threading.Thread(target=self.__thFerma, args=(sema, )).start()
     def on_stop(self):
         self.__stopThread = True
-
+    def on_exit(self):
+        print("cliccato uscita")
+        #row = lstLog.get_row_at_index(0)
+        #lbl = row.get_child().get_children()[0]
+        #lblLog.set_label(lblLog.get_label()+"\nciao")
 
 # *********** MAIN
 builMain = Gtk.Builder()
 builMain.add_from_file(GLADE)
 lstHosts = builMain.get_object('listHosts')
 btScegliFile = builMain.get_object('btScegliFile')
+#lstLog = builMain.get_object('lstLog')
+#lblLog = builMain.get_object('hRow').get_children()[0]
+lblLog = builMain.get_object("lblLog")
 winMain = builMain.get_object('mainCopynet')
 winMain.set_icon_from_file(ICON)
 winMain.connect("destroy", Gtk.main_quit)
