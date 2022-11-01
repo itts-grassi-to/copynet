@@ -1,3 +1,6 @@
+# ## CREATO DA ORTU prof. DANIELE
+# ## daniele.ortu@itisgrassi.edu.it
+
 PORTA = 4321
 MTU = 1400
 ## segnali

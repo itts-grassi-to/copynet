@@ -3,8 +3,10 @@ import gi
 import os
 import csv
 import time
+import socket
 import threading
 from threading import *
+
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -75,7 +77,7 @@ class CPN():
             label.set_markup("<span bgcolor='gray' color='white'>  " + l[self.__nomeCampi.INDIRIZZO] + "  </span>")
             hbox.pack_start(label, True, True, 0)
             # PATH
-            label = Gtk.Label(xalign=0, width_chars=20)
+            label = Gtk.Label(xalign=0, width_chars=50)
             label.set_markup("<span bgcolor='gray' color='white'>  " + l[self.__nomeCampi.PATH] + "  </span>")
             hbox.pack_start(label, True, True, 0)
             # PERCENUALE
@@ -97,7 +99,7 @@ class CPN():
             label = Gtk.Label(label=l[self.__nomeCampi.INDIRIZZO], xalign=0, width_chars=20)
             hbox.pack_start(label, True, True, 0)
             # PATH
-            label = Gtk.Label(label=l[self.__nomeCampi.PATH], xalign=0, width_chars=20)
+            label = Gtk.Label(label=l[self.__nomeCampi.PATH], xalign=0, width_chars=50)
             hbox.pack_start(label, True, True, 0)
             # PERCENUALE
             label = Gtk.Label(label="0%" , xalign=0, width_chars=10)
@@ -124,30 +126,47 @@ class CPN():
             time.sleep(2)
         self.__stampaLog("thPerc fermato")
     def __thCopia(self, row, sema, nomeFile):
-        self.__stampaLog("thCopia avviato su " + row.get_child().get_children()[self.__nomeCampi.NOME].get_label())
-        # row.get_child().get_children()[0]     # nome PC
-        # row.get_child().get_children()[1]     # indirizzo IP
+        nomePC =   row.get_child().get_children()[self.__nomeCampi.NOME].get_label()
+        ipRemoto = row.get_child().get_children()[self.__nomeCampi.INDIRIZZO].get_label()
+        nomeFile = row.get_child().get_children()[self.__nomeCampi.PATH].get_label() + \
+                   "/" + nomeFile
+        self.__stampaLog("thCopia avviato su " + nomePC + " " + ipRemoto)
         # row.get_child().get_children()[3]     attivato
-
-        with open(nomeFile,"rb") as f:
-            car=f.read()
-            dimensioneFile = residuo = len(car)
-            iperc = 0
-            while not self.__stopThread:
-                if residuo >= globale.MTU:
-                    print("INVIO: ", globale.MTU)
-                    residuo = residuo - globale.MTU
-                else:
-                    print("INVIO ", residuo)
-                    residuo=0
-                if residuo == 0:
-                    row.get_child().get_children()[self.__nomeCampi.PERC].set_label("100%")
-                    break
-                iperc = int(((dimensioneFile - residuo)/dimensioneFile)*100)
-                row.get_child().get_children()[self.__nomeCampi.PERC].set_label(str(iperc)+"%")       # percentuale
-                time.sleep(1)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as fwb:
+            try:
+                fwb.connect((ipRemoto, globale.PORTA))
+            except socket.error as exc:
+                self.__stampaLog("Errore di connessione a " + nomePC + ": " + str(exc))
+                sema.release()
+                return
+            data = fwb.recv(globale.MTU)
+            if data != globale.PAR:
+                self.__stampaLog("client non pronto")
+                return
+            fwb.sendall(str.encode(nomeFile))
+            data = fwb.recv(globale.MTU)
+            if data != globale.ACK:
+                self.__stampaLog(nomePC+": errore nell'invio log file")
+            self.__stampaLog(nomePC + ": inviato log file")
+            with open(nomeFile, "rb") as f:
+                car = f.read()
+                dimensioneFile = residuo = len(car)
+                iperc = 0
+                while not self.__stopThread:
+                    if residuo >= globale.MTU:
+                        print("INVIO: ", globale.MTU)
+                        residuo = residuo - globale.MTU
+                    else:
+                        print("INVIO ", residuo)
+                        residuo=0
+                    if residuo == 0:
+                        row.get_child().get_children()[self.__nomeCampi.PERC].set_label("100%")
+                        break
+                    iperc = int(((dimensioneFile - residuo)/dimensioneFile)*100)
+                    row.get_child().get_children()[self.__nomeCampi.PERC].set_label(str(iperc)+"%")       # percentuale
+                    time.sleep(1)
         sema.release()
-        self.__stampaLog("thCopia fermato" + row.get_child().get_children()[0].get_label())
+        self.__stampaLog("file copiato con successo su " + nomePC)
 
     def __thFerma(self, sema):
         self.__stampaLog("thFerma avviato")
@@ -175,6 +194,8 @@ class CPN():
             dialog.run()
             dialog.destroy()
             return
+        nomeFile = nomeFile.split("/")
+        nomeFile = nomeFile[len(nomeFile) - 1]
         self.__cancellaLog()
         if self.__semaAntiRimbalzo.acquire(False):
             self.__semaAntiRimbalzo.release()

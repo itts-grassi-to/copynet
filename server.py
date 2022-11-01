@@ -15,7 +15,7 @@ class Server:
             # attendo dove memorizzare il file
             path_dest = conn.recv(globale.MTU)
             conn.sendall(globale.ACK)
-
+            print("ricevuto: ", path_dest)
             with open(path_dest, 'wb') as fwb:
                 print("inizio")
                 while True:
@@ -32,8 +32,9 @@ class Server:
             s.bind((self.HOST, globale.PORTA))
             s.listen(10)
             while not self.__alt:
-                print("attendo comessione")
+                print("pronto a nuova comessione")
                 conn, addr = s.accept()
-                threading.Thread(target=self.__th_srv(), args=(conn, addr,)).start()
+                print("Connesso con: ", addr,"CN: ",conn)
+                threading.Thread(target=self.__th_srv, args=(conn, addr,)).start()
 s = Server()
 s.run()
