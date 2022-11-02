@@ -16,15 +16,22 @@ class Server:
             path_dest = conn.recv(globale.MTU)
             conn.sendall(globale.ACK)
             print("ricevuto: ", path_dest)
-            with open(path_dest, 'wb') as fwb:
-                print("inizio")
-                while True:
-                    conn.sendall(globale.PAR)
-                    data = conn.recv(globale.MTU)
-                    if data == globale.END:
-                        break
-                    fwb.write(data)
-                    print(".", end=" ")
+            try:
+                with open(path_dest, 'wb') as fwb:
+                    print("inizio")
+                    while True:
+                        # conn.sendall(globale.PAR)
+                        print("************PRONTO")
+                        data = conn.recv(globale.MTU+1)
+                        print("************RICEVUTO : ", len(data))
+                        conn.sendall(globale.ACK)
+                        if data == globale.END:
+                            break
+                        fwb.write(data)
+                        print(".", end=" ")
+            except:
+                conn.sendall(b"errore")
+
             print("fine")
 
     def run(self):

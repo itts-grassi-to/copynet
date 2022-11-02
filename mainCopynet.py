@@ -125,11 +125,13 @@ class CPN():
             lstHosts.show_all()
             time.sleep(2)
         self.__stampaLog("thPerc fermato")
-    def __thCopia(self, row, sema, nomeFile):
+    def __thCopia(self, row, sema, nomeFileOrigine):
         nomePC =   row.get_child().get_children()[self.__nomeCampi.NOME].get_label()
         ipRemoto = row.get_child().get_children()[self.__nomeCampi.INDIRIZZO].get_label()
-        nomeFile = row.get_child().get_children()[self.__nomeCampi.PATH].get_label() + \
-                   "/" + nomeFile
+        nomeFileRemoto = nomeFileOrigine.split("/")
+        nomeFileRemoto = nomeFileRemoto[len(nomeFileRemoto) - 1]
+        nomeFileRemoto = row.get_child().get_children()[self.__nomeCampi.PATH].get_label() + \
+                   "/" + nomeFileRemoto
         self.__stampaLog("thCopia avviato su " + nomePC + " " + ipRemoto)
         # row.get_child().get_children()[3]     attivato
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as fwb:
@@ -143,25 +145,46 @@ class CPN():
             if data != globale.PAR:
                 self.__stampaLog("client non pronto")
                 return
-            fwb.sendall(str.encode(nomeFile))
+            fwb.sendall(str.encode(nomeFileRemoto))
             data = fwb.recv(globale.MTU)
             if data != globale.ACK:
-                self.__stampaLog(nomePC+": errore nell'invio log file")
-            self.__stampaLog(nomePC + ": inviato log file")
-            with open(nomeFile, "rb") as f:
+                self.__stampaLog(nomePC+": errore nell'invio nome file")
+                return
+            self.__stampaLog(nomePC + ": inviato nome file")
+            with open(nomeFileOrigine, "rb") as f:
                 car = f.read()
+                start = 0
                 dimensioneFile = residuo = len(car)
                 iperc = 0
                 while not self.__stopThread:
+                    #data = fwb.recv(globale.MTU)
+                    #if data != globale.PAR:
+                    #    self.__stampaLog("client non pronto invio byte")
+                    #    break
                     if residuo >= globale.MTU:
-                        print("INVIO: ", globale.MTU)
+                        fine = start+ (globale.MTU)
+                        print("INVIO: ", start, " ",  fine )
+                        fwb.sendall(car[start:fine])
+                        start = fine
+                        data = fwb.recv(globale.MTU)
+                        if data != globale.ACK:
+                            self.__stampaLog(nomePC + ": errore nella ricezione ack dati")
+                            break
                         residuo = residuo - globale.MTU
                     else:
-                        print("INVIO ", residuo)
+                        fine = start + residuo -1
+                        fwb.sendall(car[start:fine]+str.encode('\n'))
+                        print("INVIO: ", start, " ",  fine )
+                        #start = fine
+                        data = fwb.recv(globale.MTU)
+                        if data != globale.ACK:
+                            self.__stampaLog(nomePC + ": errore nella ricezione ack dati")
+                            break
                         residuo=0
                     if residuo == 0:
+                        fwb.sendall(globale.END)
                         row.get_child().get_children()[self.__nomeCampi.PERC].set_label("100%")
-                        break
+                        self.__stopThread = True
                     iperc = int(((dimensioneFile - residuo)/dimensioneFile)*100)
                     row.get_child().get_children()[self.__nomeCampi.PERC].set_label(str(iperc)+"%")       # percentuale
                     time.sleep(1)
@@ -194,8 +217,6 @@ class CPN():
             dialog.run()
             dialog.destroy()
             return
-        nomeFile = nomeFile.split("/")
-        nomeFile = nomeFile[len(nomeFile) - 1]
         self.__cancellaLog()
         if self.__semaAntiRimbalzo.acquire(False):
             self.__semaAntiRimbalzo.release()

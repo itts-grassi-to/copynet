@@ -2,7 +2,7 @@
 # ## daniele.ortu@itisgrassi.edu.it
 
 PORTA = 4321
-MTU = 1400
+MTU = 1500
 ## segnali
 PAR = b'READY_OK'   # pronto alla ricezione
 ACK = b'ACK'        # ricevuto ok
